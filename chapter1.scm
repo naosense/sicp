@@ -55,3 +55,8 @@
 (define (good-enough2? guess x)
   (< (abs (/ (- guess (improve guess x)) guess)) 0.001))
 
+; 1.8
+; 求立方根只需要改写下improve就行
+(define (improve-cbr guess x)
+  (/ (+ (/ x (square y)) (* 2 y)) 3)
+
