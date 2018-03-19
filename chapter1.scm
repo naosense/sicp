@@ -187,3 +187,52 @@
           ((even? counter) (mul-iter r (double a) (halve counter)))
           (else (mul-iter (+ r a) a (- counter 1)))))
   (mul-iter 0 a b))
+
+; 欧几里得求最大公约数
+(define (gcd a b)
+  (if (= b 0)
+    a
+    (gcd b (remainder a b))))
+
+; 求素数
+(define (smallest-divisor n)
+  (find-divisor n 2))
+
+(define (find-divisor n test-divisor)
+  (cond ((> (square test-divisor) n) n)
+        ((divides? test-divisor n) test-divisor)
+        (else (find-divisor n (next test-divisor)))))
+
+(define (divides? a b)
+  (= (remainder b a) 0))
+
+(define (prime? n)
+  (= n (smallest-divisor n)))
+
+; 1.22
+(define (timed-prime-test n)
+  (start-prime-test n (runtime)))
+
+(define (start-prime-test n start-time)
+  (if (prime? n)
+    (begin
+    (newline)
+    (display n)
+    (report-prime (- (runtime) start-time)))
+    #f))
+
+(define (report-prime elapsed-time)
+  (display " * * * ")
+  (display elapsed-time)
+  #t)
+
+(define (search-for-primes start count)
+  (cond ((< count 1) (newline) (display "done"))
+        ((timed-prime-test start) (search-for-primes (+ start 1) (- count 1)))
+        (else (search-for-primes (+ start 1) count))))
+
+; 1.23
+(define (next n)
+  (if (= n 2)
+    3
+    (+ n 2)))
