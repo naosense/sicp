@@ -8,3 +8,5 @@
 *.bci
 *.bin
 *.com
+*.dep
+*.zo
