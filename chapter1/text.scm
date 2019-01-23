@@ -117,4 +117,32 @@
           next
           (try next))))
   (try first-guess))
+
+;; 平均阻尼
+(define (average-damp f)
+  (lambda (x) (average x (f x))))
+
+;; ((average-damp square) 10)
+
+;; 求导
+(define (deriv g)
+  (define dx 0.00001)
+  (lambda (x) (/ (- (g (+ x dx))
+                    (g x))
+                 dx)))
+
+;; ((deriv cube) 5)
+
+(define (newton-transform g)
+  (lambda (x)
+    (- x (/ (g x) ((deriv g) x)))))
+
+(define (newtons-method g guess)
+  (fixed-point (newton-transform g) guess))
+    
+(define (sqrt-a x)
+  (newtons-method (lambda (y) (- (square y) x))
+                  1.0))
+
+;; (sqrt-a 33)
                    
