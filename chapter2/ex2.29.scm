@@ -42,6 +42,11 @@
 ;              (total-weight right-weight))))))
 
 ;; 网上的比较精简/巧妙
+;; 可以看到一种固定的模式
+;(define (... ...) 
+;  (cond ((null? mobile) ...) 
+;        ((not (pair? ...)) ...) 
+;        (else ...)))
 (define (total-weight mobile) 
   (cond ((null? mobile) 0) 
         ((not (pair? mobile)) mobile) 
