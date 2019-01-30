@@ -116,6 +116,38 @@
 
 ;;(display (accumulate + 0 (car '((1 2 3) (4 5 6) (7 8 9) (10 11 12)))))
 
-;;(flatmap square '(2 3))
+;;(flatmap (lambda (x) (list (square x))) '(2 3))
+
+(define (permutations s)
+  (if (null? s)
+      (list nil)
+      (flatmap (lambda (x)
+                 (map (lambda (p) (cons x p))
+                      (permutations (remove x s))))
+               s)))
+
+(define (remove item sequence)
+  (filter (lambda (x) (not (= x item)))
+          sequence))
+
+;;(display (permutations '(1 2 3)))
+
+(define (prime-sum-pairs n)
+  (map make-pair-sum
+       (filter prime-sum?
+               (flatmap
+                (lambda (i)
+                  (map (lambda (j) (list i j))
+                       (enumerate-interval 1 (- i 1))))
+                (enumerate-interval 1 n)))))
+
+(define (prime-sum? pair)
+  (prime? (+ (car pair) (cadr pair))))
+
+(define (make-pair-sum pair)
+  (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+
+;;(display (prime-sum-pairs 3))
+      
 
                   
