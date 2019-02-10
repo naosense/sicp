@@ -150,8 +150,8 @@
 
 ;;(display (prime-sum-pairs 3))
 ;; 图形语言
-;;(define einstein (bitmap->painter "kNKQC.png"))
-(define wave einstein)
+(define ao (bitmap->painter "ao.png"))
+(define wave ao)
 (define wave2 (beside wave (flip-vert wave)))
 (define wave4 (below wave2 wave2))
 ;(paint wave)
