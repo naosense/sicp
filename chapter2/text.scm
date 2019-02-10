@@ -150,8 +150,8 @@
 
 ;;(display (prime-sum-pairs 3))
 ;; 图形语言
-(define ao (bitmap->painter "ao.png"))
-(define wave ao)
+;; (define ao (bitmap->painter "ao.png"))
+(define wave einstein)
 (define wave2 (beside wave (flip-vert wave)))
 (define wave4 (below wave2 wave2))
 ;(paint wave)
@@ -191,4 +191,4 @@
   (let ((quarter (corner-split painter n)))
     (let ((half (beside (flip-horiz quarter) quarter)))
       (below (flip-vert half) half))))
-;(paint (square-limit wave 4))
+(paint (square-limit wave 4))
