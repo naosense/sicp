@@ -1,4 +1,6 @@
-#lang sicp
+#lang racket
+
+(provide (all-defined-out))
 
 (define (make-segment v1 v2)
   (cons v1 v2))

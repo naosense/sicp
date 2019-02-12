@@ -1,4 +1,6 @@
-#lang sicp
+#lang racket
+
+(provide (all-defined-out))
 
 ;; 第一种
 (define (make-frame origin edge1 edge2)

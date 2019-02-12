@@ -1,4 +1,6 @@
-#lang sicp
+#lang racket
+
+(provide (all-defined-out))
 
 (define (make-vect x y)
   (cons x y))
