@@ -4,6 +4,8 @@
 (define wave-smile
   (segments->painter
    (list
+    (make-segment (make-vect 0.45 0.75) (make-vect 0.5 0.7))
+    (make-segment (make-vect 0.55 0.75) (make-vect 0.5 0.7))
     (make-segment (make-vect 0.006 0.840) (make-vect 0.155 0.591))
     (make-segment (make-vect 0.006 0.635) (make-vect 0.155 0.392))
     (make-segment (make-vect 0.304 0.646) (make-vect 0.155 0.591))
@@ -21,3 +23,15 @@
     (make-segment (make-vect 0.751 0.646) (make-vect 0.999 0.343))
     (make-segment (make-vect 0.751 0.000) (make-vect 0.597 0.442))
     (make-segment (make-vect 0.597 0.442) (make-vect 0.999 0.144)))))
+
+;; b)
+
+  
+
+;; c)
+(define (square-limit painter n)
+  (let ((up-right (shrink-to-upper-right (corner-split painter n))))
+    (square-of-four (flip-horiz up-right)
+                    up-right
+                    (rotate180 up-right)
+                    (flip-vert up-right))))
