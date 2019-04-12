@@ -1,0 +1,1 @@
+;; 由于racket里暂时没有random-update，也没有局部变量，暂时不做了
