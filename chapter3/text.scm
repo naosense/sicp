@@ -84,3 +84,19 @@
   (iter trials 0))
 
 ;(estimate-pi 1000000)
+
+; 函数运行环境的外围环境(父环境)是创建函数的环境,测试程序:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define xx 10)
+
+(define (global-f)
+  xx)
+
+(define (env-test)
+  (define (local-f) xx)
+  (define xx 1)
+  (cons (global-f) (local-f)))
+
+(global-f)
+(env-test)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
