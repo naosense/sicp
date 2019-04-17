@@ -1,14 +1,12 @@
 #lang sicp
 
-
-
 (define (make-table same-key?)
   (let ((local-table (list '*table*)))
     (define (assoc key records)
       (cond ((null? records) false)
             ((same-key? key (caar records)) (car records))
             (else (assoc key (cdr records)))))
-    
+
     (define (lookup key-1 key-2)
       (let ((subtable (assoc key-1 (cdr local-table))))
         (if subtable
@@ -45,4 +43,3 @@
 ((t 'lookup) 0.5 0)
 ((t 'lookup) 2.7 7)
 ((t 'lookup) 1 7)
-    
