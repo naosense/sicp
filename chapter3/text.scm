@@ -291,6 +291,7 @@
                   action
                   the-agenda))
 ;; 驱动事件处理
+;; FIFO
 (define (propagate)
   (if (empty-agenda? the-agenda)
       'done
@@ -298,6 +299,14 @@
         (first-item)
         (remove-first-agenda-item! the-agenda)
         (propagate))))
+;; LIFO
+;(define (propagate)
+;  (if (empty-agenda? the-agenda)
+;      'done
+;      (let ((first-item (first-agenda-item the-agenda)))
+;        (remove-first-agenda-item! the-agenda)
+;        (propagate)
+;        (first-item)))) 
 
 ;; 探针程序
 (define (probe name wire)
@@ -387,6 +396,15 @@
     (and-gate d e s)
     'ok))
 
+(define (full-adder a b c-in sum c-out)
+  (let ((s (make-wire))
+        (c1 (make-wire))
+        (c2 (make-wire)))
+    (half-adder b c-in s c1)
+    (half-adder a s sum c2)
+    (or-gate c1 c2 c-out)
+    'ok))
+
 (define the-agenda (make-agenda))
 (define inverter-delay 2)
 (define and-gate-delay 3)
@@ -396,11 +414,11 @@
 (define input-2 (make-wire))
 (define sum (make-wire))
 (define carry (make-wire))
+;(probe 'sum sum)
+;(probe 'carry carry)
 
-(half-adder input-1 input-2 sum carry)
-(probe 'sum sum)
-(probe 'carry carry)
-(set-signal! input-1 1)
-(propagate)
-(set-signal! input-2 1)
-(propagate)
+;(half-adder input-1 input-2 sum carry)
+;(set-signal! input-1 1)
+;(propagate)
+;(set-signal! input-2 1)
+;(propagate)

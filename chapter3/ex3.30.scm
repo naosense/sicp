@@ -1,5 +1,7 @@
 #lang sicp
 
+(#%require "text.scm")
+
 (define (ripple-carry-adder A B S c)
   (let ((cout (make-wire)))
     (cond ((null? A) c)
