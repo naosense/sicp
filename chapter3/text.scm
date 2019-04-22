@@ -613,3 +613,9 @@
 ;;(set-value! C 25 'user)
 ;;(forget-value! C 'user)
 ;;(set-value! F 212 'user)
+
+;; 并发的本质
+(define (parallel-execute . procs)
+  (map thread-wait
+       (map (lambda (proc) (thread proc))
+            procs)))
