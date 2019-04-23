@@ -1,0 +1,36 @@
+#lang sicp
+
+;; a)
+
+(define (make-semaphore n)
+  (let ((count n)
+        (mutex (make-mutex)))
+    (define (semaphore m)
+      (cond ((eq? m 'acquire)
+             (mutex 'acquire)
+             (if (> count 0)
+                 (begin (set! count (- count 1)) (mutex 'release))
+                 (begin (mutex 'release) (semaphore 'acquire))))
+            ((eq? m 'release)
+             (mutex 'acquire)
+             (set! count (+ count 1))
+             (mutex 'release))))
+    semaphore))
+
+;; b)
+
+(define (make-semaphore n)
+  (let ((count n) (cell (list false)))
+    (define (semaphore m)
+      (cond ((eq? m 'acquire)
+             (if (test-and-set! cell)
+                 (semaphore 'acquire))
+             (if (> count 0)
+                 (begin (set! count (- count 1)) (clear! cell))
+                 (begin (clear! cell) (semaphore 'acquire))))
+            ((eq? m 'release)
+             (if (test-and-set! cell)
+                 (semaphore 'release)) ;; 注意这里是'release
+             (set! count (+ count 1))
+             (clear! cell))))
+    semaphore))

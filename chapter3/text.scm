@@ -100,9 +100,9 @@
 ;(global-f)
 ;(env-test)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define x (list 'a 'b))
-(define z1 (cons x x))
-(define z2 (cons (list 'a 'b) (list 'a 'b)))
+;;(define x (list 'a 'b))
+;;(define z1 (cons x x))
+;;(define z2 (cons (list 'a 'b) (list 'a 'b)))
 ; 队列
 (define (front-ptr queue) (car queue))
 
@@ -615,7 +615,93 @@
 ;;(set-value! F 212 'user)
 
 ;; 并发的本质
-(define (parallel-execute . procs)
-  (map thread-wait
-       (map (lambda (proc) (thread proc))
-            procs)))
+
+;; 流处理
+(define (stream-ref s n)
+  (if (= n 0)
+      (stream-car s)
+      (stream-ref (stream-cdr s) (- n 1))))
+
+(define (stream-map proc s)
+  (if (stream-null? s)
+      the-empty-stream
+      (cons-stream (proc (stream-car s))
+                   (stream-map proc (stream-cdr s)))))
+
+(define (stream-for-each proc s)
+  (if (stream-null? s)
+      'done
+      (begin (proc (stream-car s))
+             (stream-for-each proc (stream-cdr s)))))
+
+(define (display-stream s)
+  (stream-for-each display-line s))
+
+(define (display-line x)
+  (newline)
+  (display x))
+
+;; 注意这里的delay实现和课本不一样,
+;; 至于为什么这么实现：
+;; Be sure to observe that force can be implemented by a function,
+;; whereas delay cannot. The reason is, of course,
+;; that we cannot allow a functional implementation
+;; of delay to evaluate the parameter of delay.
+;; The whole point of delay is to avoid such evaluation.
+;; This rules out an implementation of delay as a function.
+;; The force primitive, on the other hand,
+;; can be implemented by a function,
+;; because it works on the value of a lambda expression.
+;; 参考：http://people.cs.aau.dk/~normark/prog3-03/html/notes/
+;; eval-order_themes-delay-stream-section.html#eval-order_delay-force_title_1
+(define-syntax delay
+  (syntax-rules ()
+    ((delay expr)
+     (memo-proc
+      (lambda ()
+        expr)))))
+
+(define-syntax cons-stream
+  (syntax-rules ()
+    ((cons-stream a b)
+     (cons a (delay b)))))
+
+(define (stream-car s)
+  (car s))
+
+(define (stream-cdr s)
+  (force (cdr s)))
+
+;(define (delay exp)
+;  (memo-proc (lambda () exp)))
+
+(define (force delayed-object)
+  (delayed-object))
+
+(define (memo-proc proc)
+  (let ((already-run? false) (result false))
+    (lambda ()
+      (if (not already-run?)
+          (begin (set! result (proc))
+                 (set! already-run? true)
+                 result)
+          result))))
+
+(define (stream-enumerate-interval low high)
+  (if (> low high)
+      the-empty-stream
+      (cons-stream
+       low
+       (stream-enumerate-interval (+ low 1) high))))
+
+(define (stream-filter pred stream)
+  (cond ((stream-null? stream) the-empty-stream)
+        ((pred (stream-car stream))
+         (cons-stream (stream-car stream)
+                      (stream-filter pred
+                                     (stream-cdr stream))))
+        (else (stream-filter pred (stream-cdr stream)))))
+
+;;(display-stream (stream-enumerate-interval 1 10))
+;;(stream-ref (stream-enumerate-interval 1 10) 0)
+      
