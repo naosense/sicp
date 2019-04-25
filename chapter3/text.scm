@@ -10,12 +10,12 @@
              balance)
       "Insufficient funds"))
 
-;(withdraw 25)
-;(withdraw 25)
-;(withdraw 60)
+;; (withdraw 25)
+;; (withdraw 25)
+;; (withdraw 60)
 
-; 将balance限制到局部变量
-(define new-withdraw 
+;;  将balance限制到局部变量
+(define new-withdraw
   (let ((balance 100))
     (lambda (amount)
       (if (>= balance amount)
@@ -23,9 +23,9 @@
                  balance)
           "Insufficient funds"))))
 
-;(new-withdraw 25)
-;(new-withdraw 25)
-;(new-withdraw 60)
+;; (new-withdraw 25)
+;; (new-withdraw 25)
+;; (new-withdraw 60)
 
 (define (make-withdraw balance)
   (lambda (amount)
@@ -34,10 +34,10 @@
                balance)
         "Insufficient funds")))
 
-;(define W1 (make-withdraw 100))
-;(define W2 (make-withdraw 100))
-;(W1 50)
-;(W2 70)
+;; (define W1 (make-withdraw 100))
+;; (define W2 (make-withdraw 100))
+;; (W1 50)
+;; (W2 70)
 
 (define (make-account balance)
   ; 在这里定义和在外面定义对环境的影响
@@ -58,11 +58,11 @@
                        m))))
   dispatch)
 
-;(define acc (make-account 100))
-;((acc 'withdraw) 50)
-;((acc 'withdraw) 60)
-;((acc 'deposit) 40)
-;((acc 'withdraw) 60)
+;; (define acc (make-account 100))
+;; ((acc 'withdraw) 50)
+;; ((acc 'withdraw) 60)
+;; ((acc 'deposit) 40)
+;; ((acc 'withdraw) 60)
 
 (define rand
   (lambda () (random 4294967087)))
@@ -83,7 +83,7 @@
            (iter (- trials-remaining 1) trials-passed))))
   (iter trials 0))
 
-;(estimate-pi 1000000)
+;; (estimate-pi 1000000)
 
 ; 函数运行环境的外围环境(父环境)是创建函数的环境,测试程序:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -97,8 +97,8 @@
   (define xx 1)
   (cons (global-f) (local-f)))
 
-;(global-f)
-;(env-test)
+;; (global-f)
+;; (env-test)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;(define x (list 'a 'b))
 ;;(define z1 (cons x x))
@@ -166,41 +166,41 @@
   (list '*table*))
 
 (define t1 (make-table))
-;(insert! 'a 1 t1)
-;t1
-;(insert! 'b 2 t1)
-;t1
+;; (insert! 'a 1 t1)
+;; t1
+;; (insert! 'b 2 t1)
+;; t1
 
-; 二维表格
-;(define (lookup key-1 key-2 table)
-;  (let ((subtable (assoc key-1 (cdr table))))
-;    (if subtable
-;        (let ((record (assoc key-2 (cdr subtable))))
-;          (if record
-;              (cdr record)
-;              false))
-;        false)))
-;
-;(define (insert! key-1 key-2 value table)
-;  (let ((subtable (assoc key-1 (cdr table))))
-;    (if subtable
-;        (let ((record (assoc key-2 (cdr subtable))))
-;          (if record
-;             (set-cdr! record value)
-;             (set-cdr! subtable
-;                  (cons (cons key-2 value) (cdr subtable)))))
-;        (set-cdr! table
-;                  (cons ;;(cons key-1 (list (cons key-2 value)))亦可
-;                        (list key-1 (cons key-2 value))
-;                        (cdr table)))))
-;  'ok)
-;
-;(insert! 'math '+ 43 t1)
-;(insert! 'math '- 45 t1)
-;(insert! 'letters 'a 97 t1)
-;(insert! 'letters 'b 98 t1)
-;(lookup 'math '- t1)
-;(lookup 'letters 'b t1)
+;;  二维表格
+;; (define (lookup key-1 key-2 table)
+;;   (let ((subtable (assoc key-1 (cdr table))))
+;;     (if subtable
+;;         (let ((record (assoc key-2 (cdr subtable))))
+;;           (if record
+;;               (cdr record)
+;;               false))
+;;         false)))
+;;
+;; (define (insert! key-1 key-2 value table)
+;;   (let ((subtable (assoc key-1 (cdr table))))
+;;     (if subtable
+;;         (let ((record (assoc key-2 (cdr subtable))))
+;;           (if record
+;;              (set-cdr! record value)
+;;              (set-cdr! subtable
+;;                   (cons (cons key-2 value) (cdr subtable)))))
+;;         (set-cdr! table
+;;                   (cons ;;(cons key-1 (list (cons key-2 value)))亦可
+;;                         (list key-1 (cons key-2 value))
+;;                         (cdr table)))))
+;;   'ok)
+;;
+;; (insert! 'math '+ 43 t1)
+;; (insert! 'math '- 45 t1)
+;; (insert! 'letters 'a 97 t1)
+;; (insert! 'letters 'b 98 t1)
+;; (lookup 'math '- t1)
+;; (lookup 'letters 'b t1)
 
 ;; 数字电路模拟器
 (define (logical-not s)
@@ -300,13 +300,13 @@
         (remove-first-agenda-item! the-agenda)
         (propagate))))
 ;; LIFO
-;(define (propagate)
-;  (if (empty-agenda? the-agenda)
-;      'done
-;      (let ((first-item (first-agenda-item the-agenda)))
-;        (remove-first-agenda-item! the-agenda)
-;        (propagate)
-;        (first-item)))) 
+;; (define (propagate)
+;;   (if (empty-agenda? the-agenda)
+;;       'done
+;;       (let ((first-item (first-agenda-item the-agenda)))
+;;         (remove-first-agenda-item! the-agenda)
+;;         (propagate)
+;;         (first-item))))
 
 ;; 探针程序
 ;;(define (probe name wire)
@@ -348,12 +348,12 @@
   (define (belongs-before? segments)
     (or (null? segments)
         (< time (segment-time (car segments)))))
-  
+
   (define (make-new-time-segment time action)
     (let ((q (make-queue)))
       (insert-queue! q action)
       (make-time-segment time q)))
-  
+
   (define (add-to-segments! segments)
     (if (= (segment-time (car segments)) time)
         (insert-queue! (segment-queue (car segments))
@@ -414,14 +414,14 @@
 (define input-2 (make-wire))
 (define sum (make-wire))
 (define carry (make-wire))
-;(probe 'sum sum)
-;(probe 'carry carry)
+;; (probe 'sum sum)
+;; (probe 'carry carry)
 
-;(half-adder input-1 input-2 sum carry)
-;(set-signal! input-1 1)
-;(propagate)
-;(set-signal! input-2 1)
-;(propagate)
+;; (half-adder input-1 input-2 sum carry)
+;; (set-signal! input-1 1)
+;; (propagate)
+;; (set-signal! input-2 1)
+;; (propagate)
 
 ;; 约束传播
 
@@ -681,8 +681,8 @@
 (define (stream-cdr s)
   (force (cdr s)))
 
-;(define (delay exp)
-;  (memo-proc (lambda () exp)))
+;; (define (delay exp)
+;;   (memo-proc (lambda () exp)))
 
 (define (force delayed-object)
   (delayed-object))
@@ -711,41 +711,41 @@
                                      (stream-cdr stream))))
         (else (stream-filter pred (stream-cdr stream)))))
 
-;;(display-stream (stream-enumerate-interval 1 10))
-;;(stream-ref (stream-enumerate-interval 1 10) 0)
+;; (display-stream (stream-enumerate-interval 1 10))
+;; (stream-ref (stream-enumerate-interval 1 10) 0)
 
 (define (integers-starting-from n)
   (cons-stream n (integers-starting-from (+ n 1))))
 
-;;(define integers (integers-starting-from 1))
+;; (define integers (integers-starting-from 1))
 
-;;(define (divisible? x y) (= (remainder x y) 0))
+;; (define (divisible? x y) (= (remainder x y) 0))
 ;;
-;;(define no-sevens
-;;  (stream-filter (lambda (x) (not (divisible? x 7)))
-;;                 integers))
+;; (define no-sevens
+;;   (stream-filter (lambda (x) (not (divisible? x 7)))
+;;                  integers))
 ;;
-;;(define (fibgen a b)
-;;  (cons-stream a (fibgen b (+ a b))))
+;; (define (fibgen a b)
+;;   (cons-stream a (fibgen b (+ a b))))
 ;;
-;;(define fibs (fibgen 0 1))
+;; (define fibs (fibgen 0 1))
 ;;
-;;(define (sieve stream)
-;;  (cons-stream
-;;   (stream-car stream)
-;;   (sieve (stream-filter
-;;           (lambda (x)
-;;             (not (divisible? x (stream-car stream))))
-;;           (stream-cdr stream)))))
+;; (define (sieve stream)
+;;   (cons-stream
+;;    (stream-car stream)
+;;    (sieve (stream-filter
+;;            (lambda (x)
+;;              (not (divisible? x (stream-car stream))))
+;;            (stream-cdr stream)))))
 ;;
-;;(define primes (sieve (integers-starting-from 2)))
+;; (define primes (sieve (integers-starting-from 2)))
 
-;;(stream-ref integers 100)
-;;(stream-ref no-sevens 100)
-;;(stream-ref fibs 100)
-;;(display-stream-n integers 10)
-;;(display-stream-n fibs 10)
-;;(display-stream-n primes 10)
+;; (stream-ref integers 100)
+;; (stream-ref no-sevens 100)
+;; (stream-ref fibs 100)
+;; (display-stream-n integers 10)
+;; (display-stream-n fibs 10)
+;; (display-stream-n primes 10)
 
 ;; 隐式定义流
 (define ones (cons-stream 1 ones))
@@ -777,6 +777,60 @@
 
 (define pi (* 4 (atan 1.0)))
 
-;;(display-stream-n integers 10)
-;;(display-stream-n fibs 10)
-;;(display-stream-n double 10)
+;; (display-stream-n integers 10)
+;; (display-stream-n fibs 10)
+;; (display-stream-n double 10)
+
+;; 将迭代过程表示为流
+(define (sqrt-stream x)
+  (define (average a b)
+    (/ (+ a b) 2))
+  (define (sqrt-improve guess x)
+    (average guess (/ x guess)))
+  (define guesses
+    (cons-stream 1.0
+                 (stream-map (lambda (guess)
+                               (sqrt-improve guess x))
+                             guesses)))
+  guesses)
+
+;; ex3.55
+(define (partial-sums s)
+  (let ((s0 (stream-car s))
+        (s1 (stream-cdr s)))
+    (define accu
+      (cons-stream s0 (add-streams s1 accu)))
+    accu))
+
+(define (pi-summands n)
+  (cons-stream (/ 1.0 n)
+               ;; 这里还可以用scale-stream -1
+               (stream-map - (pi-summands (+ n 2)))))
+
+(define pi-stream
+  (scale-stream (partial-sums (pi-summands 1)) 4))
+
+(define (square x) (* x x))
+
+;; 加速器
+(define (euler-transform s)
+  (let ((s0 (stream-ref s 0))
+        (s1 (stream-ref s 1))
+        (s2 (stream-ref s 2)))
+    (cons-stream (- s2 (/ (square (- s2 s1))
+                          (+ s0 (* -2 s1) s2)))
+                 (euler-transform (stream-cdr s)))))
+
+(define (make-tableau transform s)
+  (cons-stream s
+               (make-tableau transform
+                             (transform s))))
+
+(define (accelerated-sequence transform s)
+  (stream-map  stream-car
+               (make-tableau transform s)))
+
+;; (display-stream-n (sqrt-stream 2) 10)
+;; (display-stream-n pi-stream 10)
+;; (display-stream-n (euler-transform pi-stream) 10)
+;; (display-stream-n (accelerated-sequence euler-transform pi-stream) 10)

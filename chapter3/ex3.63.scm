@@ -1,0 +1,1 @@
+;; (sqrt-stream x)进行了重复运算，如果不用memo-proc，二者就没有差异了
