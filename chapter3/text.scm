@@ -622,11 +622,11 @@
       (stream-car s)
       (stream-ref (stream-cdr s) (- n 1))))
 
-(define (stream-map proc s)
-  (if (stream-null? s)
-      the-empty-stream
-      (cons-stream (proc (stream-car s))
-                   (stream-map proc (stream-cdr s)))))
+;;(define (stream-map proc s)
+;;  (if (stream-null? s)
+;;      the-empty-stream
+;;      (cons-stream (proc (stream-car s))
+;;                   (stream-map proc (stream-cdr s)))))
 
 (define (stream-for-each proc s)
   (if (stream-null? s)
@@ -636,6 +636,15 @@
 
 (define (display-stream s)
   (stream-for-each display-line s))
+
+(define (display-stream-n s n)
+  (display-one-line (stream-car s))
+  (if (= n 0)
+      'done
+      (display-stream-n (stream-cdr s) (- n 1))))
+
+(define (display-one-line x)
+  (display x) (display " "))
 
 (define (display-line x)
   (newline)
@@ -704,4 +713,70 @@
 
 ;;(display-stream (stream-enumerate-interval 1 10))
 ;;(stream-ref (stream-enumerate-interval 1 10) 0)
-      
+
+(define (integers-starting-from n)
+  (cons-stream n (integers-starting-from (+ n 1))))
+
+;;(define integers (integers-starting-from 1))
+
+;;(define (divisible? x y) (= (remainder x y) 0))
+;;
+;;(define no-sevens
+;;  (stream-filter (lambda (x) (not (divisible? x 7)))
+;;                 integers))
+;;
+;;(define (fibgen a b)
+;;  (cons-stream a (fibgen b (+ a b))))
+;;
+;;(define fibs (fibgen 0 1))
+;;
+;;(define (sieve stream)
+;;  (cons-stream
+;;   (stream-car stream)
+;;   (sieve (stream-filter
+;;           (lambda (x)
+;;             (not (divisible? x (stream-car stream))))
+;;           (stream-cdr stream)))))
+;;
+;;(define primes (sieve (integers-starting-from 2)))
+
+;;(stream-ref integers 100)
+;;(stream-ref no-sevens 100)
+;;(stream-ref fibs 100)
+;;(display-stream-n integers 10)
+;;(display-stream-n fibs 10)
+;;(display-stream-n primes 10)
+
+;; 隐式定义流
+(define ones (cons-stream 1 ones))
+
+(define (stream-map proc . argsstreams)
+  (if (stream-null? (car argsstreams))
+      the-empty-stream
+      (cons-stream
+       (apply proc (map stream-car argsstreams))
+       (apply stream-map
+              (cons proc (map stream-cdr argsstreams))))))
+
+(define (add-streams s1 s2)
+  (stream-map + s1 s2))
+
+(define integers (cons-stream 1 (add-streams ones integers)))
+
+(define fibs
+  (cons-stream 0
+               (cons-stream 1
+                            (add-streams
+                             (stream-cdr fibs)
+                             fibs))))
+
+(define (scale-stream stream factor)
+  (stream-map (lambda (x) (* x factor)) stream))
+
+(define double (cons-stream 1 (scale-stream double 2)))
+
+(define pi (* 4 (atan 1.0)))
+
+;;(display-stream-n integers 10)
+;;(display-stream-n fibs 10)
+;;(display-stream-n double 10)
