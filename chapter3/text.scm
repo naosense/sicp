@@ -719,7 +719,7 @@
 
 ;; (define integers (integers-starting-from 1))
 
-;; (define (divisible? x y) (= (remainder x y) 0))
+(define (divisible? x y) (= (remainder x y) 0))
 ;;
 ;; (define no-sevens
 ;;   (stream-filter (lambda (x) (not (divisible? x 7)))
@@ -834,3 +834,29 @@
 ;; (display-stream-n pi-stream 10)
 ;; (display-stream-n (euler-transform pi-stream) 10)
 ;; (display-stream-n (accelerated-sequence euler-transform pi-stream) 10)
+
+;; 序对的无穷流
+;; 注意这个针对无穷流时，s2永远出不来
+(define (stream-append s1 s2)
+  (if (stream-null? s1)
+      s2
+      (cons-stream (stream-car s1)
+                   (stream-append (stream-cdr s1) s2))))
+
+;; 所以使用交错取两个流的元素
+(define (interleave s1 s2)
+  (if (stream-null? s1)
+      s2
+      (cons-stream (stream-car s1)
+                   (interleave s2 (stream-cdr s1)))))
+
+;; (display-stream-n (interleave integers ones) 10)
+(define (pairs s t)
+  (cons-stream
+    (list (stream-car s) (stream-car t))
+    (interleave
+      (stream-map (lambda (x) (list (stream-car s) x))
+                  (stream-cdr t))
+      (pairs (stream-cdr s) (stream-cdr t)))))
+
+;; (display-stream-n (pairs integers integers) 10)
