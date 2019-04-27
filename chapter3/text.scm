@@ -860,3 +860,28 @@
       (pairs (stream-cdr s) (stream-cdr t)))))
 
 ;; (display-stream-n (pairs integers integers) 10)
+
+;; 将流作为信号
+(define (integral integrand initial-value dt)
+  (define int
+    (cons-stream initial-value
+                 (add-streams (scale-stream integrand dt)
+                              int)))
+  int)
+
+;; 流和延时求值（主动延时）
+;; racket不能运行 y: undefined;cannot use before initialization
+;; (define (integral delayed-integrand initial-value dt)
+;;   (define int
+;;     (cons-stream initial-value
+;;                  (let ((integrand (force delayed-integrand)))
+;;                    (add-streams (scale-stream integrand dt)
+;;                                 int))))
+;;   int)
+;;
+;; (define (solve f y0 dt)
+;;   (define y (integral (delay dy) y0 dt))
+;;   (define dy (stream-map f y))
+;;   y)
+;;
+;; (stream-ref (solve (lambda (y) y) 1 0.001) 1000)
