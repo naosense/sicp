@@ -67,6 +67,12 @@
 (define rand
   (lambda () (random 4294967087)))
 
+;; 线性同余随机数算法
+(define (rand-update x)
+  (let ((a 7) (c 11) (m 2147483647))
+    (remainder (+ (* a x) c) m)))
+
+
 (define (estimate-pi trials)
   (sqrt (/ 6 (monte-carlo trials cesaro-test))))
 
@@ -862,26 +868,61 @@
 ;; (display-stream-n (pairs integers integers) 10)
 
 ;; 将流作为信号
-(define (integral integrand initial-value dt)
-  (define int
-    (cons-stream initial-value
-                 (add-streams (scale-stream integrand dt)
-                              int)))
-  int)
+;; (define (integral integrand initial-value dt)
+;;   (define int
+;;     (cons-stream initial-value
+;;                  (add-streams (scale-stream integrand dt)
+;;                               int)))
+;;   int)
 
 ;; 流和延时求值（主动延时）
 ;; racket不能运行 y: undefined;cannot use before initialization
-;; (define (integral delayed-integrand initial-value dt)
-;;   (define int
-;;     (cons-stream initial-value
-;;                  (let ((integrand (force delayed-integrand)))
-;;                    (add-streams (scale-stream integrand dt)
-;;                                 int))))
-;;   int)
-;;
-;; (define (solve f y0 dt)
-;;   (define y (integral (delay dy) y0 dt))
-;;   (define dy (stream-map f y))
-;;   y)
-;;
+(define (integral delayed-integrand initial-value dt)
+  (define int
+    (cons-stream initial-value
+                 (let ((integrand (force delayed-integrand)))
+                   (add-streams (scale-stream integrand dt)
+                                int))))
+  int)
+
+;; 可以做如下修改就可以运行了
+(define (solve f y0 dt)
+  (define y (integral (delay (force dy)) y0 dt))
+  (define dy (delay (stream-map f y)))
+  y)
+
 ;; (stream-ref (solve (lambda (y) y) 1 0.001) 1000)
+
+;; 函数式程序的模块化和对象的模块化
+(define random-init 10)
+(define random-numbers
+  (cons-stream random-init
+               (stream-map rand-update random-numbers)))
+
+;; (display-stream-n random-numbers 100)
+
+(define (map-successive-pairs f s)
+  (cons-stream
+    (f (stream-car s) (stream-car (stream-cdr s)))
+    (map-successive-pairs f (stream-cdr (stream-cdr s)))))
+
+(define cesaro-stream
+  (map-successive-pairs (lambda (r1 r2) (= (gcd r1 r2) 1))
+                        random-numbers))
+
+;; (display-stream-n cesaro-stream 10)
+(define (monte-carlo-test experiment-stream passed failed)
+  (define (next passed failed)
+    (cons-stream
+      (/ passed (+ passed failed))
+      (monte-carlo-test
+        (stream-cdr experiment-stream) passed failed)))
+  (if (stream-car experiment-stream)
+      (next (+ passed 1) failed)
+      (next passed (+ failed 1))))
+
+(define pi-val
+  (stream-map (lambda (p) (sqrt (/ 6 p)))
+              (monte-carlo-test cesaro-stream 0 0)))
+
+;; (display-stream-n pi-val 100000)
