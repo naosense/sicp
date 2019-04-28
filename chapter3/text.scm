@@ -2,6 +2,8 @@
 
 (#%provide (all-defined))
 
+(#%require racket/date)
+
 (define balance 100)
 
 (define (withdraw amount)
@@ -64,14 +66,19 @@
 ;; ((acc 'deposit) 40)
 ;; ((acc 'withdraw) 60)
 
+;; 注意random给整数返回<整数的正整数，给浮点数返回浮点数
+(define random-init 7)
+
 (define rand
-  (lambda () (random 4294967087)))
+  (let ((x random-init))
+    (lambda ()
+      (set! x (rand-update x))
+      x)))
 
-;; 线性同余随机数算法
+;; 线性同余随机数算法，单纯线性同余效果不好
 (define (rand-update x)
-  (let ((a 7) (c 11) (m 2147483647))
-    (remainder (+ (* a x) c) m)))
-
+  (let ((a 7) (c 11) (m 4294967087))
+    (random (remainder (+ (* a x) c) m))))
 
 (define (estimate-pi trials)
   (sqrt (/ 6 (monte-carlo trials cesaro-test))))
@@ -894,7 +901,6 @@
 ;; (stream-ref (solve (lambda (y) y) 1 0.001) 1000)
 
 ;; 函数式程序的模块化和对象的模块化
-(define random-init 10)
 (define random-numbers
   (cons-stream random-init
                (stream-map rand-update random-numbers)))
@@ -925,4 +931,4 @@
   (stream-map (lambda (p) (sqrt (/ 6 p)))
               (monte-carlo-test cesaro-stream 0 0)))
 
-;; (display-stream-n pi-val 100000)
+;; (stream-ref pi-val 1000000)
