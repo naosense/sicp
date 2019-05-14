@@ -13,12 +13,18 @@
                          env))
         ((begin? exp)
          (eval-sequence (begin-actions exp) env))
-        ((cond? exp)
-         (apply (eval (operator exp) env)))
+        ((cond? exp) (eval (cond->if exp) env))
+        ((application? exp)
+         (metacircular-apply (eval (operator exp) env)
+                             (list-of-values (operands exp) env)))
         (else
           (error "Unknown expression type -- EVAL" exp))))
 
-(define (apply procedure arguments)
+
+(define apply-in-underlying-scheme apply)
+
+;; 重命名了下apply
+(define (metacircular-apply procedure arguments)
   (cond ((primitive-procedure? procedure)
          (apply-primitive-procedure procedure arguments))
         ((compound-procedure? procedure)
@@ -40,7 +46,7 @@
 
 ;; 条件
 (define (eval-if exp env)
-  (if (true? (eval (if-preidicate exp) env))
+  (if (true? (eval (if-predicate exp) env))
       (eval (if-consequent exp) env)
       (eval (if-alternative exp) env)))
 
@@ -288,3 +294,72 @@
 (define (add-binding-to-frame! var val frame)
   (set-car! frame (cons var (car frame)))
   (set-cdr! frame (cons val (cdr frame))))
+
+;; 作为程序运行这个求值器
+(define (setup-environment)
+  (let ((initial-env
+          (extend-environment (primitive-procedure-names)
+                              (primitive-procedure-objects)
+                              the-empty-environment)))
+    (define-variable! 'true true initial-env)
+    (define-variable! 'false false initial-env)
+    initial-env))
+
+(define (primitive-procedure? proc)
+  (tagged-list? proc 'primitive))
+
+(define (primitive-implementation proc) (cadr proc))
+
+(define primitive-procedures
+  (list (list 'car car)
+        (list 'cdr cdr)
+        (list 'cons cons)
+        (list 'null? null?)
+        
+        (list '* *)
+        
+        (list 'map map)
+        ;; 其他。。。
+        ))
+
+(define (primitive-procedure-names)
+  (map car primitive-procedures))
+
+(define (primitive-procedure-objects)
+  (map (lambda (proc) (list 'primitive (cadr proc)))
+       primitive-procedures))
+
+(define (apply-primitive-procedure proc args)
+  (apply-in-underlying-scheme
+    (primitive-implementation proc) args))
+
+(define input-prompt ";;; M-Eval input:")
+
+(define output-prompt ";;; M-Eval value:")
+
+(define (drive-loop)
+  (prompt-for-input input-prompt)
+  (let ((input (read)))
+    (announce-output (symbol? (car input)))
+    (let ((output (eval input the-global-environment)))
+      (announce-output output-prompt)
+      (user-print output)))
+  (drive-loop))
+
+(define (prompt-for-input string)
+  (newline) (newline) (display string) (newline))
+
+(define (announce-output string)
+  (newline) (display string) (newline))
+
+(define (user-print object)
+  (if (compound-procedure? object)
+      (display (list 'compound-procedure
+                     (procedure-parameters object)
+                     (procedure-body object)
+                     '<procedure-env>))
+      (display object)))
+
+(define the-global-environment (setup-environment))
+
+(drive-loop)
