@@ -1,5 +1,7 @@
 #lang sicp
 
+(#%provide (all-defined))
+
 (define (eval exp env)
   (cond ((self-evaluating? exp) exp)
         ((variable? exp) (lookup-variable-value exp env))
@@ -14,11 +16,13 @@
         ((begin? exp)
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
+        ((let? exp) (eval (let->combination exp) env))
+        ((letrec? exp) (eval (letrec->let exp) env))
         ((application? exp)
          (metacircular-apply (eval (operator exp) env)
                              (list-of-values (operands exp) env)))
         (else
-          (error "Unknown expression type -- EVAL" exp))))
+         (error "Unknown expression type -- EVAL" exp))))
 
 
 (define apply-in-underlying-scheme apply)
@@ -29,13 +33,13 @@
          (apply-primitive-procedure procedure arguments))
         ((compound-procedure? procedure)
          (eval-sequence
-           (procedure-body procedure)
-           (extend-environment
-             (procedure-parameters procedure)
-             arguments
-             (procedure-environment procedure))))
+          (procedure-body procedure)
+          (extend-environment
+           (procedure-parameters procedure)
+           arguments
+           (procedure-environment procedure))))
         (else
-          (error "Unknown procedure type -- APPLY" procedure))))
+         (error "Unknown procedure type -- APPLY" procedure))))
 
 ;; eval使用它生成实际参数表
 (define (list-of-values exps env)
@@ -54,8 +58,8 @@
 (define (eval-sequence exps env)
   (cond ((last-exp? exps) (eval (first-exp exps) env))
         (else
-          (eval (first-exp exps) env)
-          (eval-sequence (rest-exps exps) env))))
+         (eval (first-exp exps) env)
+         (eval-sequence (rest-exps exps) env))))
 
 ;; 赋值和定义
 (define (eval-assignment exp env)
@@ -66,8 +70,8 @@
 
 (define (eval-definition exp env)
   (define-variable! (definition-variable exp)
-                    (eval (definition-value exp) env)
-                    env)
+    (eval (definition-value exp) env)
+    env)
   'ok)
 
 ;; 自求值表达式只有数和字符串
@@ -92,7 +96,7 @@
 
 ;; 赋值
 (define (assignment? exp)
-  (tagged-list? exp 'set))
+  (tagged-list? exp 'set!))
 
 (define (assignment-variable exp) (cadr exp))
 
@@ -199,6 +203,64 @@
                      (sequence->exp (cond-actions first))
                      (expand-clauses rest))))))
 
+;; ex4.08
+(define (let? exp) (tagged-list? exp 'let))
+
+(define (let-locals exp)
+  (if (symbol? (cadr exp))
+      (caddr exp)
+      (cadr exp)))
+
+(define (let-variable locals)
+  (if (null? locals)
+      '()
+      (cons (caar locals) (let-variable (cdr locals)))))
+
+(define (let-value locals)
+  (if (null? locals)
+      '()
+      (cons (cadar locals) (let-value (cdr locals)))))
+
+(define (let-body exp)
+  (if (symbol? (cadr exp))
+      (cdddr exp)
+      (cddr exp)))
+
+(define (let->combination exp)
+  (let ((f (cadr exp))
+        (locals (let-locals exp))
+        (body (let-body exp)))
+    (if (symbol? f)
+        (make-begin (list (eval-definition f
+                                           (make-lambda (let-variable locals) body))
+                          (cons f (let-value locals))))
+        (cons (make-lambda (let-variable locals) body)
+              (let-value locals)))))
+
+(define (make-let locals body)
+  (cons 'let (cons locals body)))
+
+;; ex4.20
+(define (letrec? exp) (tagged-list? exp 'letrec))
+
+(define (letrec-variables exp)
+  (map car (cadr exp)))
+
+(define (letrec-values exp)
+  (map cadr (cadr exp)))
+
+(define (letrec-body exp)
+  (cddr exp))
+
+(define (letrec->let exp)
+  (let ((vars (letrec-variables exp))
+        (vals (letrec-values exp))
+        (body (letrec-body exp)))
+    ;; 比较纳闷的是这里为什么要两个引号才行，其他地方一个就可以？
+  (make-let (map (lambda (var) (list var ''*unassigned*)) vars)
+            (append (map (lambda (var val) (list 'set! var val)) vars vals)
+                    body))))
+
 ;; 注意这里的定义是所有不是false的都是true，
 ;; 而不是等于true的才是true，这意味着'a,1
 ;; 等等都是true
@@ -232,14 +294,16 @@
       (cond ((null? vars)
              (env-loop (enclosing-environment env)))
             ((eq? var (car vars))
-             (car vals))
-            (else (scan (cdr vars) (cdr vals)))))
-    (if (eq? env the-empty-environment)
-        (error "Unbound variable" var)
-        (let ((frame (first-frame env)))
-          (scan (frame-variables frame)
-                (frame-values frame)))))
-  (env-loop env))
+             (if (eq? (car vals) '*unassigned*)
+                 (error "Unassigned value" (car vars))
+                 (car vals)))
+             (else (scan (cdr vars) (cdr vals)))))
+      (if (eq? env the-empty-environment)
+          (error "Unbound variable" var)
+          (let ((frame (first-frame env)))
+            (scan (frame-variables frame)
+                  (frame-values frame)))))
+    (env-loop env))
 
 (define (extend-environment vars vals base-env)
   (if (= (length vars) (length vals))
@@ -262,7 +326,7 @@
 
 ;; (set-variable-value! var val env)
 (define (set-variable-value! var val env)
-    (define (env-loop env)
+  (define (env-loop env)
     (define (scan vars vals)
       (cond ((null? vars)
              (env-loop (enclosing-environment env)))
@@ -274,7 +338,7 @@
         (let ((frame (first-frame env)))
           (scan (frame-variables frame)
                 (frame-values frame)))))
-    (env-loop env))
+  (env-loop env))
 
 ;; 环境就是框架的表
 (define (enclosing-environment env) (cdr env))
@@ -298,9 +362,9 @@
 ;; 作为程序运行这个求值器
 (define (setup-environment)
   (let ((initial-env
-          (extend-environment (primitive-procedure-names)
-                              (primitive-procedure-objects)
-                              the-empty-environment)))
+         (extend-environment (primitive-procedure-names)
+                             (primitive-procedure-objects)
+                             the-empty-environment)))
     (define-variable! 'true true initial-env)
     (define-variable! 'false false initial-env)
     initial-env))
@@ -315,10 +379,11 @@
         (list 'cdr cdr)
         (list 'cons cons)
         (list 'null? null?)
-        
+        (list '+ +)
+        (list '- -)
         (list '* *)
-        
-        (list 'map map)
+        (list '/ /)
+        (list '= =)
         ;; 其他。。。
         ))
 
@@ -331,7 +396,7 @@
 
 (define (apply-primitive-procedure proc args)
   (apply-in-underlying-scheme
-    (primitive-implementation proc) args))
+   (primitive-implementation proc) args))
 
 (define input-prompt ";;; M-Eval input:")
 
@@ -340,7 +405,9 @@
 (define (drive-loop)
   (prompt-for-input input-prompt)
   (let ((input (read)))
-    (announce-output (symbol? (car input)))
+    ;; debug
+    ;; (announce-output (car input))
+    ;; (announce-output (cdr input))
     (let ((output (eval input the-global-environment)))
       (announce-output output-prompt)
       (user-print output)))
@@ -363,3 +430,7 @@
 (define the-global-environment (setup-environment))
 
 (drive-loop)
+;;(display (car ''a))
+
+;;(symbol? (quote apple))
+
