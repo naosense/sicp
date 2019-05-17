@@ -30,6 +30,3 @@
 (search-for-primes 10000000001 3)
 ;; 21000-25000
 (search-for-primes 100000000001 3)
-
-
-  
