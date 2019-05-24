@@ -2,45 +2,57 @@
 
 (#%provide (all-defined))
 
-;; (define (eval exp env)
-;;   (cond ((self-evaluating? exp) exp)
-;;         ((variable? exp) (lookup-variable-value exp env))
-;;         ((quoted? exp) (text-of-quotation exp))
-;;         ((assignment? exp) (eval-assignment exp env))
-;;         ((definition? exp) (eval-definition exp env))
-;;         ((if? exp) (eval-if exp env))
-;;         ((lambda? exp)
-;;          (make-procedure (lambda-parameters exp)
-;;                          (lambda-body exp)
-;;                          env))
-;;         ((begin? exp)
-;;          (eval-sequence (begin-actions exp) env))
-;;         ((cond? exp) (eval (cond->if exp) env))
-;;         ((let? exp) (eval (let->combination exp) env))
-;;         ((letrec? exp) (eval (letrec->let exp) env))
-;;         ((application? exp)
-;;          (metacircular-apply (eval (operator exp) env)
-;;                              (list-of-values (operands exp) env)))
-;;         (else
-;;          (error "Unknown expression type -- EVAL" exp))))
 (define (eval exp env)
-  ((analyze exp) env))
+  (cond ((self-evaluating? exp) exp)
+        ((variable? exp) (lookup-variable-value exp env))
+        ((quoted? exp) (text-of-quotation exp))
+        ((assignment? exp) (eval-assignment exp env))
+        ((definition? exp) (eval-definition exp env))
+        ((if? exp) (eval-if exp env))
+        ((lambda? exp)
+         (make-procedure (lambda-parameters exp)
+                         (lambda-body exp)
+                         env))
+        ((begin? exp)
+         (eval-sequence (begin-actions exp) env))
+        ((cond? exp) (eval (cond->if exp) env))
+        ((let? exp) (eval (let->combination exp) env))
+        ((letrec? exp) (eval (letrec->let exp) env))
+        ;;((application? exp)
+        ;;(meta-apply (eval (operator exp) env)
+        ;;             (list-of-values (operands exp) env)))
+        ((application? exp)
+         (meta-apply (actual-value (operator exp) env)
+                     (operands exp)
+                     env))
+        (else
+          (error "Unknown expression type -- EVAL" exp))))
+
+;; (define (eval exp env)
+;;   ((analyze exp) env))
+
+(define (actual-value exp env)
+  (force-it (eval exp env)))
 
 (define apply-in-underlying-scheme apply)
 
 ;; 重命名了下apply
-(define (metacircular-apply procedure arguments)
+(define (meta-apply procedure arguments env)
   (cond ((primitive-procedure? procedure)
-         (apply-primitive-procedure procedure arguments))
+         ;;(apply-primitive-procedure procedure arguments))
+         (apply-primitive-procedure
+           procedure
+           (list-of-arg-values arguments env)))
         ((compound-procedure? procedure)
          (eval-sequence
-          (procedure-body procedure)
-          (extend-environment
-           (procedure-parameters procedure)
-           arguments
-           (procedure-environment procedure))))
+           (procedure-body procedure)
+           (extend-environment
+             (procedure-parameters procedure)
+             ;;arguments
+             (list-of-delayed-args arguments env)
+             (procedure-environment procedure))))
         (else
-         (error "Unknown procedure type -- APPLY" procedure))))
+          (error "Unknown procedure type -- APPLY" procedure))))
 
 ;; eval使用它生成实际参数表
 (define (list-of-values exps env)
@@ -49,9 +61,27 @@
       (cons (eval (first-operand exps) env)
             (list-of-values (rest-operands exps) env))))
 
+(define (list-of-arg-values exps env)
+  (if (no-operands? exps)
+      '()
+      (cons (actual-value (first-operand exps) env)
+            (list-of-arg-values (rest-operands exps)
+                                env))))
+
+(define (list-of-delayed-args exps env)
+  (if (no-operands? exps)
+      '()
+      (cons (delay-it (first-operand exps) env)
+            (list-of-delayed-args (rest-operands exps)
+                                  env))))
+
 ;; 条件
+;; (define (eval-if exp env)
+;;   (if (true? (eval (if-predicate exp) env))
+;;       (eval (if-consequent exp) env)
+;;       (eval (if-alternative exp) env)))
 (define (eval-if exp env)
-  (if (true? (eval (if-predicate exp) env))
+  (if (true? (actual-value (if-predicate exp) env))
       (eval (if-consequent exp) env)
       (eval (if-alternative exp) env)))
 
@@ -59,8 +89,8 @@
 (define (eval-sequence exps env)
   (cond ((last-exp? exps) (eval (first-exp exps) env))
         (else
-         (eval (first-exp exps) env)
-         (eval-sequence (rest-exps exps) env))))
+          (eval (first-exp exps) env)
+          (eval-sequence (rest-exps exps) env))))
 
 ;; 赋值和定义
 (define (eval-assignment exp env)
@@ -71,8 +101,8 @@
 
 (define (eval-definition exp env)
   (define-variable! (definition-variable exp)
-    (eval (definition-value exp) env)
-    env)
+                    (eval (definition-value exp) env)
+                    env)
   'ok)
 
 ;; 自求值表达式只有数和字符串
@@ -258,9 +288,9 @@
         (vals (letrec-values exp))
         (body (letrec-body exp)))
     ;; 比较纳闷的是这里为什么要两个引号才行，其他地方一个就可以？
-  (make-let (map (lambda (var) (list var ''*unassigned*)) vars)
-            (append (map (lambda (var val) (list 'set! var val)) vars vals)
-                    body))))
+    (make-let (map (lambda (var) (list var ''*unassigned*)) vars)
+              (append (map (lambda (var val) (list 'set! var val)) vars vals)
+                      body))))
 
 ;; 注意这里的定义是所有不是false的都是true，
 ;; 而不是等于true的才是true，这意味着'a,1
@@ -298,13 +328,13 @@
              (if (eq? (car vals) '*unassigned*)
                  (error "Unassigned value" (car vars))
                  (car vals)))
-             (else (scan (cdr vars) (cdr vals)))))
-      (if (eq? env the-empty-environment)
-          (error "Unbound variable" var)
-          (let ((frame (first-frame env)))
-            (scan (frame-variables frame)
-                  (frame-values frame)))))
-    (env-loop env))
+            (else (scan (cdr vars) (cdr vals)))))
+    (if (eq? env the-empty-environment)
+        (error "Unbound variable" var)
+        (let ((frame (first-frame env)))
+          (scan (frame-variables frame)
+                (frame-values frame)))))
+  (env-loop env))
 
 (define (extend-environment vars vals base-env)
   (if (= (length vars) (length vals))
@@ -363,9 +393,9 @@
 ;; 作为程序运行这个求值器
 (define (setup-environment)
   (let ((initial-env
-         (extend-environment (primitive-procedure-names)
-                             (primitive-procedure-objects)
-                             the-empty-environment)))
+          (extend-environment (primitive-procedure-names)
+                              (primitive-procedure-objects)
+                              the-empty-environment)))
     (define-variable! 'true true initial-env)
     (define-variable! 'false false initial-env)
     initial-env))
@@ -399,7 +429,7 @@
 
 (define (apply-primitive-procedure proc args)
   (apply-in-underlying-scheme
-   (primitive-implementation proc) args))
+    (primitive-implementation proc) args))
 
 (define input-prompt ";;; M-Eval input:")
 
@@ -411,7 +441,7 @@
     ;; debug
     ;; (announce-output (car input))
     ;; (announce-output (cdr input))
-    (let ((output (eval input the-global-environment)))
+    (let ((output (actual-value input the-global-environment)))
       (announce-output output-prompt)
       (user-print output)))
   (drive-loop))
@@ -499,9 +529,9 @@
         (loop (sequentially first-proc (car rest-procs))
               (cdr rest-procs))))
   (let ((procs (map analyze exps)))
-        (if (null? procs)
-            (error "Empty sequence -- ANALYZE"))
-        (loop (car procs) (cdr procs))))
+    (if (null? procs)
+        (error "Empty sequence -- ANALYZE"))
+    (loop (car procs) (cdr procs))))
 
 (define (analyze-application exp)
   (let ((fproc (analyze (operator exp)))
@@ -523,5 +553,82 @@
           (error
             "Unknown procedure type -- EXECUTE-APPLICATION"
             proc))))
+
+;; 惰性求值
+
+(define (delay-it exp env)
+  (list 'thunk exp env))
+
+(define (thunk? obj)
+  (tagged-list? obj 'thunk))
+
+(define (thunk-exp thunk) (cadr thunk))
+
+(define (thunk-env thunk) (caddr thunk))
+
+(define (evaluated-thunk? obj)
+  (tagged-list? obj 'evaluated-thunk))
+
+(define (thunk-value evaluated-thunk) (cadr evaluated-thunk))
+
+(define (force-it obj)
+  (cond ((thunk? obj)
+         (let ((result (actual-value
+                         (thunk-exp obj)
+                         (thunk-env obj))))
+           (set-car! obj 'evaluated-thunk)
+           (set-car! (cdr obj) result)
+           (set-cdr! (cdr obj) '())
+           result))
+        ((evaluated-thunk? obj)
+         (thunk-value obj))
+        (else obj)))
+
+;; 将流作为惰性的表
+;;(define (cons x y)
+;;  (lambda (m) (m x y)))
+;;
+;;(define (car z)
+;;  (z (lambda (p q) p)))
+;;
+;;(define (cdr z)
+;;  (z (lambda (p q) q)))
+;;
+;;(define (list-ref items n)
+;;  (if (= n 0)
+;;      (car items)
+;;      (list-ref (cdr items) (- n 1))))
+;;
+;;(define (map proc items)
+;;  (if (null? items)
+;;      '()
+;;      (cons (proc (car items))
+;;            (map proc (cdr items)))))
+;;
+;;(define (scale-list items factor)
+;;  (map (lambda (x) (* x factor))
+;;       items))
+;;
+;;(define (add-lists list1 list2)
+;;  (cond ((null? list1) list2)
+;;        ((null? list2) list1)
+;;        (else (cons (+ (car list1) (car list2))
+;;                    (add-lists (cdr list1) (cdr list2))))))
+;;
+;;(define ones (cons 1 ones))
+;;
+;;(define integers (cons 1 (add-lists ones integers)))
+;;
+;;(define (integral integrand initial-value dt)
+;;  (define int
+;;    (cons initial-value
+;;          (add-lists (scale-list integrand dt)
+;;                     int)))
+;;  int)
+;;
+;;(define (solve f y0 dt)
+;;  (define y (integral dy y0 dt))
+;;  (define dy (map f y))
+;;  y)
 
 (drive-loop)
