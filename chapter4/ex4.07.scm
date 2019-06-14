@@ -1,5 +1,7 @@
 #lang sicp
 
+(#%require "lazy.scm")
+
 (define (let*? exp) (tagged-list? exp 'let*))
 
 (define (let*-locals exp) (cadr exp))

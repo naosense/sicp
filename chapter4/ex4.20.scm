@@ -1,6 +1,6 @@
 #lang sicp
 
-(#%require "text.scm")
+(#%require "lazy.scm")
 
 ;; a)
 (define letrec-eg '(letrec ((var1 exp1) (var2 exp2))

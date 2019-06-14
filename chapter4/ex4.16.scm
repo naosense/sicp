@@ -1,6 +1,6 @@
 #lang sicp
 
-(#%require "text.scm")
+(#%require "lazy.scm")
 
 ;; a)已经在text.scm中修改
 

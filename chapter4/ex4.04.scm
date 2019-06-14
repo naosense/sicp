@@ -1,6 +1,6 @@
 #lang sicp
 
-(#%require "text.scm")
+(#%require "lazy.scm")
 
 (define (and? exp) (tagged-list? exp 'and))
 

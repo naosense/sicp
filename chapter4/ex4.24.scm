@@ -1,6 +1,6 @@
 #lang sicp
 
-(#%require "text.scm")
+(#%require "lazy.scm")
 
 ;; 执行如下程序，
 ;; 分析和执行在一起的结果   257000
