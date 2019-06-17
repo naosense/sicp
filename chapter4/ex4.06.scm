@@ -1,5 +1,7 @@
 #lang sicp
 
+(#%require "lazy.scm")
+
 (define (let? exp) (tagged-list? exp 'let))
 
 (define (let-locals exp) (cadr exp))
@@ -26,3 +28,5 @@
 
 (define (make-let locals body)
   (cons 'let (cons locals body)))
+
+(display (let->combination '(let ((a 1) (b 2)) (+ a b))))
