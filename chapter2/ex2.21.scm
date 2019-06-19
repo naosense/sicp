@@ -1,7 +1,8 @@
 #lang sicp
 
 (#%require rackunit)
-(#%require "../chapter1/text.scm")
+
+(define (square x) (* x x))
 
 (define (square-list1 items)
   (if (null? items)

@@ -408,21 +408,21 @@
   (cons (* r (cos a)) (* r (sin a))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 极坐标
-(define (real-part z)
-  (* (magnitude z) (cos (angle z))))
+;; (define (real-part z)
+;;   (* (magnitude z) (cos (angle z))))
+;;
+;; (define (imag-part z)
+;;   (* (magnitude z) (sin (angle z))))
+;;
+;; (define (magnitude z) (car z))
+;;
+;; (define (angle z) (cdr z))
 
-(define (imag-part z)
-  (* (magnitude z) (sin (angle z))))
-
-(define (magnitude z) (car z))
-
-(define (angle z) (cdr z))
-
-(define (make-from-real-imag x y)
-  (cons (sqrt (+ (square x) (square y)))
-        (atan y x)))
-
-(define (make-from-mag-ang r a) (cons r a))
+;; (define (make-from-real-imag x y)
+;;   (cons (sqrt (+ (square x) (square y)))
+;;         (atan y x)))
+;;
+;; (define (make-from-mag-ang r a) (cons r a))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 带标志数据
 (define (attach-tag type-tag contents)
@@ -452,7 +452,7 @@
 ;; (put <op> <type> <func>)
 ;; (get <op> <type>
 (define (apply-generic op . args)
-  (let ((type-tags (map tag-tag args)))
+  (let ((type-tags (map type-tag args)))
     (let ((proc (get op type-tags)))
       (if proc
           (apply proc (map contens args))

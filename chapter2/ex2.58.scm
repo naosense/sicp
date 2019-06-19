@@ -53,9 +53,9 @@
 
 ;(display (before '+ '(x * y + z)))
 
-(define (operation expr) 
-  (if (memq '+ expr) 
-      '+ 
+(define (operation expr)
+  (if (memq '+ expr)
+      '+
       '*))
 
 (define (sum? x)
@@ -69,7 +69,7 @@
     (if (= (length bf) 1)
         (car bf)
         bf)))
-    
+
 
 (define (augend s)
   (let ((af (cdr (memq '+ s))))
@@ -113,8 +113,3 @@
 
 (display (deriv '(x + (3 * (x + (y + 2)))) 'x))
 (display (deriv '(x + 3 * (x + y + 2)) 'x))
-
-
-
-
-

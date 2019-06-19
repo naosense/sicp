@@ -1,7 +1,6 @@
 #lang sicp
 
 (#%require rackunit)
-(#%require "text.scm")
 
 (check-equal? (list 'a 'b 'c) '(a b c))
 (check-equal? (list (list 'george)) '((george)))

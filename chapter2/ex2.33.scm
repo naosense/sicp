@@ -1,7 +1,6 @@
 #lang sicp
 
 (#%require rackunit)
-(#%require "text.scm")
 
 (define (map p sequence)
   (accumulate (lambda (x y) (cons (p x) y)) nil sequence))
@@ -11,6 +10,13 @@
 
 (define (length sequence)
   (accumulate (lambda (x y) (inc y)) 0 sequence))
+
+;; commmon
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
 
 
 (check-equal? (map inc '(1 2 3)) '(2 3 4))

@@ -1,9 +1,5 @@
 #lang sicp
 
-(#%require "../chapter1/text.scm")
-
-(#%provide (all-defined))
-
 (define (make-segment p q)
   (cons p q))
 
@@ -38,4 +34,7 @@
                 (average (y-point start)
                          (y-point end)))))
 
-;(print-point (mid-point (make-segment (make-point 1 2) (make-point 5 8)))) 
+(define (average x y)
+  (/ (+ x y) 2))
+
+(print-point (mid-point (make-segment (make-point 1 2) (make-point 5 8)))) 

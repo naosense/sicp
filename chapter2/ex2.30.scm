@@ -1,9 +1,8 @@
 #lang sicp
 
 (#%require rackunit)
-(#%require "../chapter1/text.scm")
 
-(#%provide (all-defined))
+(define (square x) (* x x))
 
 (define (square-tree1 items)
   (cond ((null? items) nil)
@@ -11,7 +10,7 @@
          (cons (square (car items)) (square-tree1 (cdr items))))
         (else
          (cons (square-tree1 (car items)) (square-tree1 (cdr items))))))
-      
+
 
 (define (square-tree2 items)
   (map (lambda (sub-tree)

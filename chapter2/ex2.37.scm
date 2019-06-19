@@ -1,8 +1,6 @@
 #lang sicp
 
 (#%require rackunit)
-(#%require "text.scm")
-(#%require "ex2.36.scm")
 
 (define (dot-product v w)
   (define (map proc x y)
@@ -21,7 +19,22 @@
 (define (matrix-*-matrix m n)
   (let ((cols (transpose n)))
     (map (lambda (v) (matrix-*-vector cols v)) m)))
-  
+
+;; 2.37
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+      nil
+      ;; 齐头并进
+      (cons (accumulate op init (map car seqs))
+            (accumulate-n op init (map cdr seqs)))))
+
+;; common
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
 (define m '((1 2 3 4) (4 5 6 6) (6 7 8 9)))
 (define n '((1 2) (4 5) (6 7) (8 9)))
 
@@ -32,4 +45,3 @@
 (display (transpose m))
 (newline)
 (display (matrix-*-matrix m n))
-

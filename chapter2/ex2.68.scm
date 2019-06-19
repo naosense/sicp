@@ -1,9 +1,42 @@
 #lang sicp
 
-(#%require "text.scm")
+;; common
+(define (make-leaf symbol weight)
+  (list 'leaf symbol weight))
 
-(#%provide (all-defined))
+(define (leaf? object)
+  (eq? (car object) 'leaf))
 
+(define (symbol-leaf x) (cadr x))
+
+(define (weight-leaf x) (caddr x))
+
+(define (make-code-tree left right)
+  (list left
+        right
+        (append (symbols left) (symbols right))
+        (+ (weight left) (weight right))))
+
+(define (left-branch tree) (car tree))
+
+(define (right-branch tree) (cadr tree))
+
+(define (symbols tree)
+  (if (leaf? tree)
+      (list (symbol-leaf tree))
+      (caddr tree)))
+
+(define (weight tree)
+  (if (leaf? tree)
+      (weight-leaf tree)
+      (cadddr tree)))
+
+(define (element-of-set? x set)
+  (cond ((null? set) false)
+        ((equal? x (car set)) true)
+        (else (element-of-set? x (cdr set)))))
+
+;; solution
 (define sample-tree
   (make-code-tree (make-leaf 'A 4)
                   (make-code-tree
@@ -29,5 +62,6 @@
                (cons '1 (encode-symbol symbol right)))
               (else (error "bad symbol" symbol))))))
 
-;;(display (encode '(A D A B B C A) sample-tree))
-      
+
+
+(display (encode '(A D A B B C A) sample-tree))
