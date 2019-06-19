@@ -1,9 +1,13 @@
 #lang sicp
 
-(#%provide (all-defined))
+;; 约束条件顺序会影响性能，因为是深度优先，所以
+;; 能尽早的在上层截断性能就越高，可以运行下面的
+;; (time 100 origin-multiple-dwelling)
+;; (time 100 fast-multiple-dwelling)
+;; 做一下对比
+;; 我的机器这两个值分别为850000和541000
 
 (define apply-in-underlying-scheme apply)
-
 ;; 自求值表达式只有数和字符串
 (define (self-evaluating? exp)
   (cond ((number? exp) true)
@@ -462,7 +466,16 @@
             ((member (car items) (cdr items)) false)
             (else (distinct? (cdr items)))))
 
-    (define (multiple-dwelling)
+    (define (time n f)
+      (define (rep-run n f)
+        (if (= n 0)
+            'ok
+            (begin (f) (rep-run (- n 1) f))))
+      (let ((start (runtime)))
+        (rep-run n f)
+        (- (runtime) start)))
+
+    (define (origin-multiple-dwelling)
       (let ((baker (amb 1 2 3 4 5))
             (cooper (amb 1 2 3 4 5))
             (fletcher (amb 1 2 3 4 5))
@@ -481,6 +494,26 @@
               (list 'fletcher fletcher)
               (list 'miller miller)
               (list 'smith smith))))
+
+    (define (fast-multiple-dwelling)
+      (let ((baker (amb 1 2 3 4 5))
+            (cooper (amb 1 2 3 4 5))
+            (fletcher (amb 1 2 3 4 5))
+            (miller (amb 1 2 3 4 5))
+            (smith (amb 1 2 3 4 5)))
+        (require (> miller cooper))
+        (require (not (= (abs (- smith fletcher)) 1)))
+        (require (not (= (abs (- fletcher cooper)) 1)))
+        (require (not (= fletcher 5)))
+        (require (not (= fletcher 1)))
+        (require (not (= baker 5)))
+        (require (not (= cooper 1)))
+        (require (distinct? (list baker cooper fletcher miller smith)))
+        (list (list 'baker baker)
+              (list 'cooper cooper)
+              (list 'fletcher fletcher)
+              (list 'miller miller)
+              (list 'smith smith))))
     ))
 
 (define (primitive-procedure? proc)
@@ -494,7 +527,6 @@
         (list 'cons cons)
         (list 'list list)
         (list 'null? null?)
-        (list 'eq? eq?)
         (list '+ +)
         (list '- -)
         (list '* *)

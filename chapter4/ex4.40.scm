@@ -1,9 +1,10 @@
 #lang sicp
 
-(#%provide (all-defined))
+;; 本题即从源头上去掉取值一些不可能的取值，
+;; 而不是先生成再回溯，本机运行
+;; (time 100 muliple-dwelling) 时间301030
 
 (define apply-in-underlying-scheme apply)
-
 ;; 自求值表达式只有数和字符串
 (define (self-evaluating? exp)
   (cond ((number? exp) true)
@@ -462,25 +463,30 @@
             ((member (car items) (cdr items)) false)
             (else (distinct? (cdr items)))))
 
+    (define (time n f)
+      (define (rep-run n f)
+        (if (= n 0)
+            'ok
+            (begin (f) (rep-run (- n 1) f))))
+      (let ((start (runtime)))
+        (rep-run n f)
+        (- (runtime) start)))
+
     (define (multiple-dwelling)
-      (let ((baker (amb 1 2 3 4 5))
-            (cooper (amb 1 2 3 4 5))
-            (fletcher (amb 1 2 3 4 5))
-            (miller (amb 1 2 3 4 5))
-            (smith (amb 1 2 3 4 5)))
-        (require (distinct? (list baker cooper fletcher miller smith)))
-        (require (not (= baker 5)))
-        (require (not (= cooper 1)))
-        (require (not (= fletcher 5)))
-        (require (not (= fletcher 1)))
+      (let ((miller (amb 1 2 3 4 5))
+            (cooper (amb 2 3 4 5)))
         (require (> miller cooper))
-        (require (not (= (abs (- smith fletcher)) 1)))
-        (require (not (= (abs (- fletcher cooper)) 1)))
-        (list (list 'baker baker)
-              (list 'cooper cooper)
-              (list 'fletcher fletcher)
-              (list 'miller miller)
-              (list 'smith smith))))
+        (let ((fletcher (amb 2 3 4)))
+          (require (not (= (abs (- fletcher cooper)) 1)))
+          (let ((smith (amb 1 2 3 4 5)))
+            (require (not (= (abs (- smith fletcher)) 1)))
+            (let ((baker (amb 1 2 3 4)))
+              (require (distinct? (list baker cooper fletcher miller smith)))
+              (list (list 'baker baker)
+                    (list 'cooper cooper)
+                    (list 'fletcher fletcher)
+                    (list 'miller miller)
+                    (list 'smith smith)))))))   
     ))
 
 (define (primitive-procedure? proc)
@@ -494,7 +500,6 @@
         (list 'cons cons)
         (list 'list list)
         (list 'null? null?)
-        (list 'eq? eq?)
         (list '+ +)
         (list '- -)
         (list '* *)
