@@ -1,0 +1,5 @@
+(rule (star ?person)
+      (and (job ?person (?department . ?position))
+           (or (not (supervisor ?person ?boss))
+               (and (supervisor ?person ?boss)
+                    (not (job ?boss (?department . ?ignore)))))))

@@ -286,7 +286,7 @@
         ((amb? exp) (analyze-amb exp))
         ((application? exp) (analyze-application exp))
         (else
-         (error "Unknown expression type -- ANALYZE" exp))))
+          (error "Unknown expression type -- ANALYZE" exp))))
 
 (define (analyze-self-evaluating exp)
   (lambda (env succeed fail)
@@ -309,7 +309,7 @@
       (vproc env
              (lambda (val fail2)
                (let ((old-value
-                      (lookup-variable-value var env)))
+                       (lookup-variable-value var env)))
                  (set-variable-value! var val env)
                  (succeed 'ok
                           (lambda ()
@@ -375,7 +375,7 @@
                          env
                          (lambda (args fail3)
                            (execute-application
-                            proc args succeed fail3))
+                             proc args succeed fail3))
                          fail2))
              fail))))
 
@@ -404,9 +404,9 @@
           succeed
           fail))
         (else
-         (error
-          "Unknown procedure type -- EXECUTE-APPLICATION"
-          proc))))
+          (error
+            "Unknown procedure type -- EXECUTE-APPLICATION"
+            proc))))
 
 ;; amb
 (define (amb? exp) (tagged-list? exp 'amb))
@@ -431,9 +431,9 @@
 ;; 作为程序运行这个求值器
 (define (setup-environment)
   (let ((initial-env
-         (extend-environment (primitive-procedure-names)
-                             (primitive-procedure-objects)
-                             the-empty-environment)))
+          (extend-environment (primitive-procedure-names)
+                              (primitive-procedure-objects)
+                              the-empty-environment)))
     (define-variable! 'true true initial-env)
     (define-variable! 'false false initial-env)
     (init-funcs-of-text initial-env)
@@ -448,13 +448,17 @@
                          'ok)
                        (lambda ()
                          (announce-output
-                          ";;; There are no more values of"))))
+                           ";;; There are no more values of"))))
             funcs-of-text))
 
 (define funcs-of-text
   '(
     (define (require p)
       (if (not p) (amb)))
+
+    (define (an-element-of items)
+      (require (not (null? items)))
+      (amb (car items) (an-element-of (cdr items))))
 
     (define (distinct? items)
       (cond ((null? items) true)
@@ -577,7 +581,7 @@
 
 (define (apply-primitive-procedure proc args)
   (apply-in-underlying-scheme
-   (primitive-implementation proc) args))
+    (primitive-implementation proc) args))
 
 (define input-prompt ";;; Amb-Eval input:")
 
@@ -600,14 +604,14 @@
                        (internal-loop next-alternative))
                      (lambda ()
                        (announce-output
-                        ";;; There are no more values of")
+                         ";;; There are no more values of")
                        (user-print input)
                        (drive-loop)))))))
   (internal-loop
-   (lambda ()
-     (newline)
-     (display ";;; There is no current problew")
-     (drive-loop))))
+    (lambda ()
+      (newline)
+      (display ";;; There is no current problew")
+      (drive-loop))))
 
 (define (prompt-for-input string)
   (newline) (newline) (display string) (newline))
