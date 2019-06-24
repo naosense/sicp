@@ -32,6 +32,19 @@
 
 (define (assignment-value exp) (caddr exp))
 
+;; ex4.51
+(define (permanent-assignment? exp)
+  (tagged-list? exp 'permanent-set!))
+
+(define (analyze-permanent-assignment exp)
+  (let ((var (assignment-variable exp))
+        (vproc (analyze (assignment-value exp))))
+    (lambda (env succeed fail)
+      (vproc env
+             (lambda (val fail2)
+               (set-variable-value! var val env)
+               (succeed 'ok fail2))
+             fail))))
 ;; 定义
 (define (definition? exp)
   (tagged-list? exp 'define))
@@ -277,8 +290,10 @@
         ((quoted? exp) (analyze-quoted exp))
         ((variable? exp) (analyze-variable exp))
         ((assignment? exp) (analyze-assignment exp))
+        ((permanent-assignment? exp) (analyze-permanent-assignment exp))
         ((definition? exp) (analyze-definition exp))
         ((if? exp) (analyze-if exp))
+        ((if-fail? exp) (analyze-if-fail exp))
         ((lambda? exp) (analyze-lambda exp))
         ((begin? exp) (analyze-sequence (begin-actions exp)))
         ((cond? exp) (analyze (cond->if exp)))
@@ -340,6 +355,23 @@
                    (cproc env succeed fail2)
                    (aproc env succeed fail2)))
              fail))))
+
+;; 4.52
+(define (if-fail? exp) (tagged-list? exp 'if-fail))
+
+(define (if-fail-first exp) (cadr exp))
+
+(define (if-fail-second exp) (caddr exp))
+
+(define (analyze-if-fail exp)
+  (let ((first (analyze (if-fail-first exp)))
+        (second (analyze (if-fail-second exp))))
+    (lambda (env succeed fail)
+      (first env
+             (lambda (first-value fail2)
+               (succeed first-value fail2))
+             (lambda ()
+               (second env succeed fail))))))
 
 (define (analyze-lambda exp)
   (let ((vars (lambda-parameters exp))
@@ -453,8 +485,8 @@
 
 (define funcs-of-text
   '(
-    (define (require p)
-      (if (not p) (amb)))
+;    (define (require p)
+;      (if (not p) (amb)))
 
     (define (an-element-of items)
       (require (not (null? items)))
@@ -553,6 +585,8 @@
         (list 'list list)
         (list 'null? null?)
         (list 'eq? eq?)
+        (list 'equal? equal?)
+        (list 'even? even?)
         (list '+ +)
         (list '- -)
         (list '* *)
@@ -569,6 +603,7 @@
         (list 'member member)
         (list 'memq memq)
         (list 'abs abs)
+        (list 'remainder remainder)
         ;; 其他。。。
         ))
 
