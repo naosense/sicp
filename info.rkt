@@ -78,11 +78,33 @@
   (string-append
    "## 计算机程序的构造与解释(Structure and Interpretation of Computer Programs)
 
-编程环境为DrRacket，版本7.1，[配置方法](https://docs.racket-lang.org/sicp-manual/)，没有选择mit-scheme，原因有二：
+### 环境搭建
+
+编程环境为DrRacket，版本7.1，现在已经有了专门给本书编写的包[配置方法](https://docs.racket-lang.org/sicp-manual/)，没有选择mit-scheme，原因有二：
+
 - 编辑和调试不好用
 - 没有sicp图形语言
 
+如果你喜欢使用Vim，那么下面的配置还可以一键运行，特别的方便。
+
+```vim
+augroup scheme
+    autocmd!
+    \" 加上<esc>可以避免弹出命令行必须按两次enter才能回到代码
+    autocmd filetype scheme nnoremap <F9> :w<cr>:! racket %<cr><esc>
+augroup end
+```
+这样直接按下`F9`就能运行了
+
 ### 遇到问题
+
+#### Win10安装sicp包
+
+7.1版本ui界面安装pkg报错cadr: contract violation，可以使用命令行安装，命令如下：
+
+```shell
+raco pkg install --auto sicp
+```
 
 #### 图形语言
 
