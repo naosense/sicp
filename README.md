@@ -2,12 +2,13 @@
 
 ### 环境搭建
 
-编程环境为DrRacket，版本7.1，现在已经有了专门给本书编写的包[配置方法](https://docs.racket-lang.org/sicp-manual/)，没有选择mit-scheme，原因有二：
+编程环境为DrRacket，版本7.1，现在已经有了专门给本书编写的包[配置方法](https://docs.racket-lang.org/sicp-manual/)，没有选择mit-scheme，是因为
 
 - 编辑和调试不好用
 - 没有sicp图形语言
+- emacs操作方式不习惯
 
-如果你喜欢使用Vim，那么使用下面的配置还可以一键运行，特别的方便。
+如果你喜欢使用Vim，那么下面的配置还可以一键运行，特别的方便。
 
 ```vim
 augroup scheme
