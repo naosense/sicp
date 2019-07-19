@@ -1,6 +1,6 @@
 #lang sicp
 
-;; chapter3
+;; helper functions
 (define-syntax delay
   (syntax-rules ()
     ((delay expr)
@@ -105,13 +105,13 @@
 (define get (operation-table 'lookup-proc))
 (define put (operation-table 'insert-proc!))
 
+;; logic program
 (define input-prompt ";;; Query input:")
 (define output-prompt ";;; Query results:")
 
 (define (query-driver-loop)
   (prompt-for-input input-prompt)
   (let ((q (query-syntax-process (read))))
-    (display q)
     (cond ((assertion-to-be-added? q)
            (add-rule-or-assertion! (add-assertion-body q))
            (newline)
@@ -345,7 +345,7 @@
     'ok))
 
 (define (add-rule! rule)
-  (store-assertion-in-index rule)
+  (store-rule-in-index rule)
   (let ((old-rules THE-RULES))
     (set! THE-RULES (cons-stream rule old-rules))
     'ok))
@@ -513,7 +513,6 @@
 (put 'lisp-value 'qeval lisp-value)
 (put 'always-true 'qeval always-true)
 
-
 (define database-assertions
   '((address (Warbucks Oliver) (Swellesley (Top Head Road)))
     (job (Warbucks Oliver) (administration big wheel))
@@ -572,6 +571,10 @@
     (rule (same ?x ?x))
 
     (rule (wheel ?person)
+          (and (supervisor ?middle-manager ?person)
+               (supervisor ?x ?middle-manager)))
+
+    (rule (wheel2 ?person ?middle-manager ?x)
           (and (supervisor ?middle-manager ?person)
                (supervisor ?x ?middle-manager)))
 
